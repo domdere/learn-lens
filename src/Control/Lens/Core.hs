@@ -1,0 +1,11 @@
+-------------------------------------------------------------------
+-- |
+-- Module       : Control.Lens.Core
+-- Copyright    : (C) 2014 Dom De Re
+-- License      : BSD-style (see the file etc/LICENSE.md)
+-- Maintainer   : Dom De Re
+--
+-- The Core Definitions for Lens
+--
+-------------------------------------------------------------------
+module Control.Lens.Core where
