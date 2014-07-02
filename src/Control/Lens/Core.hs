@@ -18,7 +18,6 @@ module Control.Lens.Core (
     ) where
 
 import LensPrelude
-import Data.Functor ( Functor(..) )
 
 type Lens s t a b = forall (f :: * -> *). (Functor f) => (a -> f b) -> s -> f t
 

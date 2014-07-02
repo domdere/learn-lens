@@ -40,8 +40,10 @@ library
     hs-source-dirs:     src
 
     exposed-modules:    Data.Functor.Const
+                    ,   Data.Functor.Contravariant
                     ,   Control.Lens.Core
                     ,   Control.Lens.Getter
+                    ,   Control.Lens.Tuple
 
     other-modules:      LensPrelude
 

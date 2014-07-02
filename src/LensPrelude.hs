@@ -11,6 +11,7 @@
 module LensPrelude (
     -- * TypeClasses
         Eq(..)
+    ,   Functor(..)
     ,   Integral(..)
     ,   Num(..)
     ,   Show(..)
@@ -19,7 +20,9 @@ module LensPrelude (
     -- * Operators
     ,   ($)
     ,   (.)
+    ,   (<$>)
     -- * Functions
+    ,   const
     ,   flip
     ,   id
     ,   on
@@ -27,6 +30,7 @@ module LensPrelude (
 
 import Prelude ( Eq(..), Integral(..), Num(..), Show(..), ($) )
 import Data.Bool ( Bool(..) )
-import Data.Function ( (.), flip, id, on )
+import Data.Function ( (.), const, flip, id, on )
+import Data.Functor ( Functor(..), (<$>) )
 
 
