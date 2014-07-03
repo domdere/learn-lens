@@ -28,7 +28,7 @@ module Control.Lens.Getter (
 
 import LensPrelude
 import Data.Functor.Const
-import Data.Functor.Contravariant
+import Data.Contravariant
 
 import Control.Monad.Reader ( MonadReader, asks )
 import Control.Monad.State ( MonadState, gets )
@@ -62,7 +62,7 @@ x ^. l = getConst $ l Const x
 -- @
 --
 (.?) :: (Functor f) => Getter s (f a) -> Getter a b -> Getter s (f b)
-l1 .? l2 = to $ (\x -> (^. l2) <$> (x ^. l1))
+l1 .? l2 = to $ \x -> (^. l2) <$> (x ^. l1)
 
 -- |
 -- Like `asks` but it takes a (Getter) lens instead of the function

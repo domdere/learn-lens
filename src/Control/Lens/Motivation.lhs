@@ -269,12 +269,11 @@ While the actual definition of `Lens` used in the library is this:
 
 > type Lens s t a b = (Functor f) => (a -> f b) -> s -> f t
 
-Note that this is *still* more general than `fmap` in that there are more possibilities for the relationship between `a` and `s` than there are for `a and `f a`, similarly for `b` and `f t`.
+Note that this is *still* more general than `fmap` in that there are more possibilities for the relationship between `a` and `s` than there are for `a` and `f a`, similarly for `b` and `f t`.
 
 The intent here is to try and generalise the concept of "work" (Recall that I had said the `a -> b` argument which is now of type `a -> f b` corresponded the the "work" you wanted to do with
 the `a` value before recombining it with `s` ).
 
-The "work" is no longer something that takes a value of type `a` and returns something of type `b`, but rather something that has some sort of structure on top `b` that you use in combination with `fmap`
-and the "setter" function to turn the `b`s within that structure into `t`s...
+The "work" is no longer something that takes a value of type `a` and returns something of type `b`, but rather something that has some sort of structure on top of `b` that you use in combination with `fmap` and the "setter" function to turn the `b`s within that structure into `t`s...
 
 The majority of the material will be about what we can achieve with Lenses by specialising the `Functor f`, either with some specific functor, or by adding more constraints.

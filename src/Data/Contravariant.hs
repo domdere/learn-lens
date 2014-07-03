@@ -1,6 +1,6 @@
 -------------------------------------------------------------------
 -- |
--- Module       : Data.Functor.Contravariant
+-- Module       : Data.Contravariant
 -- Copyright    : (C) 2014 Dom De Re
 -- License      : BSD-style (see the file etc/LICENSE.md)
 -- Maintainer   : Dom De Re
@@ -37,7 +37,7 @@
 -- full contravariant library
 --
 -------------------------------------------------------------------
-module Data.Functor.Contravariant (
+module Data.Contravariant (
     -- * The Type Class
         Contravariant(..)
     ) where

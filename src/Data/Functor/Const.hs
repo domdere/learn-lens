@@ -18,7 +18,7 @@ module Data.Functor.Const (
     ) where
 
 import LensPrelude
-import Data.Functor.Contravariant
+import Data.Contravariant
 
 newtype Const r a = Const { getConst :: r } deriving (Eq, Show)
 

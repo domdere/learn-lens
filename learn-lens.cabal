@@ -39,8 +39,8 @@ library
 
     hs-source-dirs:     src
 
-    exposed-modules:    Data.Functor.Const
-                    ,   Data.Functor.Contravariant
+    exposed-modules:    Data.Contravariant
+                    ,   Data.Functor.Const
                     ,   Control.Lens.Core
                     ,   Control.Lens.Getter
                     ,   Control.Lens.Motivation
