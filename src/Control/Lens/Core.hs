@@ -35,4 +35,4 @@ type Lens' s a = Lens s s a a
 -- other than this implementation
 --
 lens :: (Functor f) => (s -> a) -> (s -> b -> t) -> (a -> f b) -> s -> f t
-lens getter setter g x = fmap (setter x) ((g . getter) x)
+lens getIt packIt doSomething x = fmap (packIt x) ((doSomething . getIt) x)

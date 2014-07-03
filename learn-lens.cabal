@@ -28,8 +28,8 @@ library
     build-depends:      base < 5 && >= 4
                     ,   containers
                     ,   array
-                    ,   mtl                 == 2.2.*
-                    ,   transformers        == 0.4.*
+                    ,   mtl                 == 2.1.*
+                    ,   transformers        == 0.3.*
 
     ghc-options:        -Wall
                         -fno-warn-unused-imports
@@ -43,6 +43,7 @@ library
                     ,   Data.Functor.Contravariant
                     ,   Control.Lens.Core
                     ,   Control.Lens.Getter
+                    ,   Control.Lens.Motivation
                     ,   Control.Lens.Tuple
 
     other-modules:      LensPrelude
