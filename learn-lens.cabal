@@ -40,7 +40,9 @@ library
     hs-source-dirs:     src
 
     exposed-modules:    Data.Contravariant
+                    ,   Data.Distributive
                     ,   Data.Functor.Const
+                    ,   Data.Profunctor
                     ,   Control.Lens.Core
                     ,   Control.Lens.Getter
                     ,   Control.Lens.Motivation
@@ -51,6 +53,7 @@ library
     default-extensions: KindSignatures
                     ,   NoImplicitPrelude
                     ,   RankNTypes
+                    ,   Safe
 
 test-suite              doctests
     type:
