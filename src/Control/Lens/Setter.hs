@@ -12,8 +12,12 @@
 --
 -------------------------------------------------------------------
 module Control.Lens.Setter (
+    -- * The Plain Setter Type
+        ASetter
+    -- * The Settable Type Class
+    ,   Settable
     -- * The Setter Type
-        Setter
+    ,   Setter
     -- * Operators
     ,   (.~)
     -- * Functions
@@ -22,56 +26,31 @@ module Control.Lens.Setter (
     ) where
 
 import LensPrelude
+import Data.Distributive
+import Data.Profunctor
 import Data.Functor.Identity
 
-import Control.Monad.State ( MonadState, put )
+import Control.Applicative ( Applicative )
+import Data.Traversable ( Traversable )
+
+-- | This is the specialisation of `Lens` on which the
+-- Setters are based, it should look reminiscent of
+-- the `CrapLens` in `Control..Lens.Motivation`
+--
+type ASetter s t a b = (a -> Identity b) -> s -> Identity t
 
 -- |
--- This type is `Lens s a` with the functor specialised to
--- something that is both a Functor and in Contravariant
--- (the prototypical example being the Const functor)
+-- This type class will empbody the properties of the Identity Functor
+-- That we actually take advantage of in the Setters, so we can experiment
+-- in trying to apply them to other similar Functors.
 --
--- @
---     type Getter' s a = (a -> Const a a) -> s -> Const a s
--- @
---
--- But this type lets you potentially use it on something isomorphic to (Const ())
---
-type Getter s a = (Contravariant f, Functor f) => (a -> f a) -> s -> f s
-
-infixl 8 ^.
-infixr 9 .?
-
-(^.) :: s -> Getter s a -> a
-x ^. l = getConst $ l Const x
+class (Applicative f, Distributive f, Traversable f) -> Settable f where
 
 -- |
--- This works like `.` but composes getters in a similar way to the way the below
--- function would compose functions:
+-- This is the more general version that applies to all Functors that
+-- share the properties of the `Identity` functor that we actually take advantage of.
+-- This is the type that the lens library actually uses most of the time, so we'll use it
+-- too so that its consistent with what you will see.  But in terms of understanding whats going
+-- on, it will be useful to imagine `ASetter` in place of `Setter` when you see it in the types.
 --
--- @
---     foo :: (Functor f) => (a -> f b) -> (b -> c) -> a -> f c
---     foo g h x = fmap h (g x)
--- @
---
-(.?) :: (Functor f) => Getter s (f a) -> Getter a b -> Getter s (f b)
-l1 .? l2 = to $ \x -> (^. l2) <$> (x ^. l1)
-
--- |
--- Like `asks` but it takes a (Getter) lens instead of the function
---
-view :: (MonadReader r m) => Getter r a -> m a
-view l = asks (^. l)
-
--- |
--- Like `gets` but takes a (getter) lens instead of a function
---
-use :: (MonadState s m) => Getter s a -> m a
-use l = gets (^. l)
-
--- |
--- With Getters, due to the `infer` function for `Const`
--- we don't need the "setter" that appears in `Control.Lens.Core.lens`
---
-to :: (s -> a) -> Getter s a
-to f g = contramap f . g . f
+type Setter s t a b = forall f. (Settable f) => (a -> f b) -> s -> f t
