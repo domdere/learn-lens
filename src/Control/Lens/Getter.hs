@@ -12,8 +12,9 @@
 --
 -------------------------------------------------------------------
 module Control.Lens.Getter (
-    -- * The Getter Type
+    -- * The Getter Types
         Getter
+    ,   Getting
     -- * Operators
     ,   (^.)
     ,   (.?)
@@ -45,6 +46,12 @@ import Control.Monad.State ( MonadState, gets )
 -- But this type lets you potentially use it on something isomorphic to (Const ())
 --
 type Getter s a = (Contravariant f, Functor f) => (a -> f a) -> s -> f s
+
+-- |
+-- The same as `Getter` but using the specific `Const` functor instead of
+-- the `Contravariant` type class.
+--
+type Getting r s a = (a -> Const r a) -> s -> Const r s
 
 infixl 8 ^.
 infixr 9 .?

@@ -42,10 +42,11 @@ library
     exposed-modules:    Data.Choice
                     ,   Data.Contravariant
                     ,   Data.Functor.Const
+                    ,   Data.Profunctor
                     ,   Control.Lens.Core
                     ,   Control.Lens.Getter
                     ,   Control.Lens.Motivation
-                    ,   Control.Lens.Prism1
+                    ,   Control.Lens.Prism
                     ,   Control.Lens.Tuple
 
     other-modules:      LensPrelude
