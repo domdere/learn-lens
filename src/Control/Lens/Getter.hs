@@ -14,6 +14,8 @@
 module Control.Lens.Getter (
     -- * The Getter Type
         Getter
+    ,   Getting
+    ,   Accessing
     -- * Operators
     ,   (^.)
     ,   (.?)
@@ -45,6 +47,18 @@ import Control.Monad.State ( MonadState, gets )
 -- But this type lets you potentially use it on something isomorphic to (Const ())
 --
 type Getter s a = (Contravariant f, Functor f) => (a -> f a) -> s -> f s
+
+-- |
+-- Sometimes you need something more specific:
+--
+type Getting r s a = (a -> Const r a) -> s -> Const r s
+
+-- |
+-- A convenient alias when using folds and traversals.
+-- Its like `Getting` with (->) replaced with a `Profunctor`,
+-- kind of....
+--
+type Accessing p r s a = p a (Const r a) -> s -> Const r s
 
 infixl 8 ^.
 infixr 9 .?

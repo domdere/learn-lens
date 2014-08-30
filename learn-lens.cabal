@@ -44,6 +44,7 @@ library
                     ,   Data.Functor.Const
                     ,   Data.Profunctor
                     ,   Control.Lens.Core
+                    ,   Control.Lens.Fold
                     ,   Control.Lens.Getter
                     ,   Control.Lens.Motivation
                     ,   Control.Lens.Tuple
