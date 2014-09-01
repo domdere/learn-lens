@@ -40,9 +40,11 @@
 module Data.Contravariant (
     -- * The Type Class
         Contravariant(..)
+    ,   coerce
     ) where
 
 import LensPrelude
+
 
 infixl 4 >$
 
@@ -63,3 +65,14 @@ class Contravariant f where
     --
     (>$) :: b -> f b -> f a
     (>$) = contramap . const
+
+{-# ANN coerce "HLint: use void" #-}
+-- |
+-- Can coerce the domain type of a `Functor` that is also `Contravariant` since
+-- everything at the intersection of `Functor` of `Contravariant` is similar to
+-- @`Const` r@, i.e the functor either maps the domain category to the unit
+-- category, or can be expressed as a composition of functors, one of which
+-- maps into the unit category.
+--
+coerce :: (Contravariant f, Functor f) => f a -> f b
+coerce = contramap (const ()) . fmap (const ())

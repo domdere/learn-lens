@@ -20,6 +20,9 @@ module Data.Functor.Const (
 import LensPrelude
 import Data.Contravariant
 
+import Control.Applicative ( Applicative(..) )
+import Data.Monoid ( Monoid(..) )
+
 newtype Const r a = Const { getConst :: r } deriving (Eq, Show)
 
 instance Functor (Const r) where
@@ -27,6 +30,11 @@ instance Functor (Const r) where
 
 instance Contravariant (Const r) where
     contramap _ (Const x) = Const x
+
+instance (Monoid m) => Applicative (Const m) where
+    pure = (const . Const) mempty
+
+    (Const x) <*> (Const y) = Const $ x `mappend` y
 
 -- | With Const since the input type gets thrown away, we can infer that to whatever type we want
 --

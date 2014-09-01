@@ -26,6 +26,9 @@
 module Data.Profunctor (
     -- * The Type Class
         Profunctor(..)
+    -- * Operators
+    ,   ( .# )
+    ,   ( #. )
     ) where
 
 import LensPrelude
@@ -70,5 +73,29 @@ class Profunctor p where
     rmap :: (b -> c) -> p a b -> p a c
     rmap = dimap id
 
+
 instance Profunctor (->) where
     dimap g h f = h . f . g
+
+
+-- |
+-- In the proper `profunctors` package this is an Unsafe version of `rmap`
+-- I dont understand why its necessary so for now im just going to make it an
+-- alias for `rmap` so that some of my implementations look more like what you would
+-- see in the actual source code.
+--
+-- `#.` is basically like `Data.Functor.<$>`
+--
+( #. ) :: (Profunctor p) => (b -> c) -> p a b -> p a c
+( #. ) = rmap
+
+-- |
+-- In the proper `profunctors` package this is an Unsafe version of `lmap`
+-- I dont understand why its necessary so for now im just going to make it an
+-- alias for `lmap` so that some of my implementations look more like what you would
+-- see in the actual source code.
+--
+( .# ) :: (Profunctor p) => (b -> c) -> p c a -> p b a
+( .# ) = lmap
+
+
