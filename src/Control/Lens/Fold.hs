@@ -37,8 +37,10 @@ infixl 8 ^?
 -- |
 -- From the lens package:
 --
--- A `Fold` describes how to retrieve multiple values in a way that can be composed
--- in a lens like fashion.
+--      A `Fold` describes how to retrieve multiple values in a way that can be composed
+--      in a lens like fashion.
+--
+-- ------------------------
 --
 -- compare it to the definition of a `Getter`:
 --
@@ -46,14 +48,59 @@ infixl 8 ^?
 -- type `Getter` s a = (`Contravariant` f, `Data.Functor.Functor.Functor` f) => (a -> f a) -> s -> f s
 -- @
 --
--- So a `Fold` is a specialised `Getter`.
+-- The starting point for expressing Folds in a lens like way starts with `Data.Foldable.foldMap`
 --
--- @`Const` r@ is the archetypal example of a `Data.Functor.Functor` that is also `Contravariant`.
+-- @
+-- `Data.Foldable.foldMap` :: (`Data.Monoid.Monoid` m, `Data.Foldable.Foldable` t) => (a -> m) -> t a -> m
+-- @
 --
--- See the `Applicative` instance for @`Const` m@ when @m@ is a `Data.Monoid.Monoid`.
+-- Compare this to `Data.Traversable.traverse`:
 --
--- A `Getter` is like a `Fold` that ignores the `Applicative` instance of @`Const` r@, i.e
--- it ignores any `Data.Monoid.Monoid` qualities of @r@ that `Const` could otherwise have accumulated.
+-- @
+-- `Data.Traversable.traverse` :: (`Control.Applicative.Applicative` f, `Data.Traversable.Traversable` t) => (a -> f b) -> t a -> f (t b)
+-- @
+--
+-- Which already looks like a lens, with @s ~ t a@, @t ~ t b@, @a ~ a@ and @b ~ b@ (and the additional requirement that @f@ is `Control.Applicative.Applicative`)
+--
+-- `Data.Foldable.foldMap` is not quite there unfortunately and requires some pretty sneaky rejiggering, first replace @m@ with `Const m a`:
+--
+-- @
+-- type Fold t a = (`Data.Monoid.Monoid` m, `Data.Foldable.Foldable` t) => (a -> `Const` m a) -> t a -> `Const` m a
+-- @
+--
+-- The problem is the final @`Const` m a@ that appears at the end as the final output.  If it were a @`Const` m (t a)@ instead,
+-- it would fit the `Getter` pattern also.  Changing that type isn't so hard, see `coerce`.
+--
+-- So by using `coerce` at the end, we have:
+--
+-- @
+-- type Fold t a = (`Data.Monoid.Monoid` m, `Data.Foldable.Foldable` t) => (a -> `Const` m a) -> t a -> `Const` m (t a)
+-- @
+--
+-- Now the fact that @t@ is `Data.Foldable.Foldable` is not important.  The key feature of a function of the above type is that
+-- it is structurally aware of @t a@ such that can find a (possibly empty) sequence of @a@s that it can map the @a -> `Const` m a@ function over
+-- to get an ordered sequence of @m@s to `Data.Monoid.mappend` up.  A `Data.Foldable.Foldable` instance is only one such way to get a function
+-- like this (see `folded`). For example, a `Getter` can provide a sequence of length 1.  The important thing to keep is the `Data.Monoid.Monoid` constraint.
+--
+-- So we'll generalise it a bit more:
+--
+-- @
+-- type Fold t a = (`Data.Monoid.Monoid` m) => (a -> `Const` m a) -> s -> `Const` m s
+-- @
+--
+-- We have something even more similar to a `Getter`.  Now lets review which qualities of the @`Const` m@ Functor we used...
+--
+-- Firstly, we used `coerce`:
+--
+-- @
+-- coerce :: (`Contravariant` f, `Data.Functor` f) => f a -> f b
+-- @
+--
+-- So if we were to replace @`Const` m@ with @f@ we would have to add the @`Contravariant` f@ constraint.
+--
+-- But what to do about the `Data.Monoid.Monoid` constraint?  See the `Control.Applicative` instance for `Const`.
+-- This would be the mechanism that would be used internally to `Data.Monoid.mappend` up the @m@s, so we can
+-- replace the @`Data.Monoid.Monoid m@ constraint with @`Control.Applicative f`@ instead:
 --
 type Fold s a = forall f. (Contravariant f, Applicative f) => (a -> f a) -> s -> f s
 
@@ -69,13 +116,15 @@ instance (Contravariant f, Applicative f) => Monoid (Folding f a) where
     (Folding x) `mappend` (Folding y) = Folding $ x *> y
 
 -- |
+-- This can be thought of as a "safe head" operator.
+--
 -- Remember that `Getting` is defined as:
 --
 -- @
 -- type `Getting` r s a = (a -> Const r a) -> s -> Const r s
 -- @
 --
--- This can be thought of as a "safe head" operator
+-- When @r@ is a `Data.Monoid.Monoid`, @`Getting` r s a@ is a `Fold`.
 --
 (^?) :: s -> Getting (First a) s a -> Maybe a
 x ^? l = getFirst $ foldMapOf l (First #. Just) x
@@ -104,34 +153,6 @@ foldMapOf l f x = getConst $ l (Const #. f) x
 -- |
 -- `folded` hasn't looked like this in a while, since Indexed Lenses have
 -- been introduced, which I don't understand yet.
---
--- `Fold` looks close to a Traversal (see the type for `Data.Traversable.traverse`)
--- (And so it should, `Data.Foldable.Foldable` is similar to `Data.Traversable.Traversable`)
---
--- But the starting point for expressing Folds in a lens like way starts with `Data.Foldable.foldMap`
---
--- @
--- `Data.Foldable.foldMap` :: (`Data.Monoid.Monoid` m, `Data.Foldable.Foldable` t) => (a -> m) -> t a -> m
--- @
---
--- Compare this to `Data.Traversable.traverse`:
---
--- @
--- `Data.Traversable.traverse` :: (`Control.Applicative.Applicative` f, `Data.Traversable.Traversable` t) => (a -> f b) -> t a -> f (t b)
--- @
---
--- Which already looks like a lens, with @s ~ t a@, @t ~ t b@, @a ~ a@ and @b ~ b@ (and the additional requirement that @f@ is `Control.Applicative.Applicative`)
---
--- `Data.Foldable.foldMap` is not quite there unfortunately and requires some pretty sneaky rejiggering, first replace @m@ with `Const m a`:
---
--- @
--- `Data.Foldable.foldMap` :: (`Data.Monoid.Monoid` m, `Data.Foldable.Foldable` t) => (a -> Const m a) -> t a -> Const m a
--- @
---
--- TODO: pick up from here
---
--- but note how `folded` uses `coerce` to cheat and coerce the final @f a@ into
--- @f (t a)@
 --
 folded :: (Foldable f) => Fold (f a) a
 folded g = coerce . getFolding . foldMap (Folding . g)
