@@ -68,6 +68,15 @@ instance (Contravariant f, Applicative f) => Monoid (Folding f a) where
 
     (Folding x) `mappend` (Folding y) = Folding $ x *> y
 
+-- |
+-- Remember that `Getting` is defined as:
+--
+-- @
+-- type `Getting` r s a = (a -> Const r a) -> s -> Const r s
+-- @
+--
+-- This can be thought of as a "safe head" operator
+--
 (^?) :: s -> Getting (First a) s a -> Maybe a
 x ^? l = getFirst $ foldMapOf l (First #. Just) x
 
@@ -83,6 +92,12 @@ x ^? l = getFirst $ foldMapOf l (First #. Just) x
 --
 -- It doesnt actually do any folding...
 --
+-- Remember:
+--
+-- @
+-- type `Accessing` p r s a = p a (Const r a) -> s -> Const r s
+-- @
+--
 foldMapOf :: (Profunctor p) => Accessing p r s a -> p a r -> s -> r
 foldMapOf l f x = getConst $ l (Const #. f) x
 
@@ -91,8 +106,31 @@ foldMapOf l f x = getConst $ l (Const #. f) x
 -- been introduced, which I don't understand yet.
 --
 -- `Fold` looks close to a Traversal (see the type for `Data.Traversable.traverse`)
+-- (And so it should, `Data.Foldable.Foldable` is similar to `Data.Traversable.Traversable`)
 --
--- but see how `folded` uses `coerce` to cheat and coerce the final @f a@ into
+-- But the starting point for expressing Folds in a lens like way starts with `Data.Foldable.foldMap`
+--
+-- @
+-- `Data.Foldable.foldMap` :: (`Data.Monoid.Monoid` m, `Data.Foldable.Foldable` t) => (a -> m) -> t a -> m
+-- @
+--
+-- Compare this to `Data.Traversable.traverse`:
+--
+-- @
+-- `Data.Traversable.traverse` :: (`Control.Applicative.Applicative` f, `Data.Traversable.Traversable` t) => (a -> f b) -> t a -> f (t b)
+-- @
+--
+-- Which already looks like a lens, with @s ~ t a@, @t ~ t b@, @a ~ a@ and @b ~ b@ (and the additional requirement that @f@ is `Control.Applicative.Applicative`)
+--
+-- `Data.Foldable.foldMap` is not quite there unfortunately and requires some pretty sneaky rejiggering, first replace @m@ with `Const m a`:
+--
+-- @
+-- `Data.Foldable.foldMap` :: (`Data.Monoid.Monoid` m, `Data.Foldable.Foldable` t) => (a -> Const m a) -> t a -> Const m a
+-- @
+--
+-- TODO: pick up from here
+--
+-- but note how `folded` uses `coerce` to cheat and coerce the final @f a@ into
 -- @f (t a)@
 --
 folded :: (Foldable f) => Fold (f a) a
