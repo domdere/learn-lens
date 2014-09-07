@@ -16,9 +16,13 @@ module Control.Lens.Fold (
         Fold
     -- * Operators
     ,   (^?)
+    ,   (^..)
     -- * Functions
     ,   folded
     ,   foldMapOf
+    ,   foldrOf
+    ,   foldlOf
+    ,   toListOf
     ) where
 
 import LensPrelude
@@ -29,10 +33,10 @@ import Data.Profunctor
 
 import Control.Applicative ( Applicative, (*>),  pure )
 import Data.Maybe ( Maybe(..) )
-import Data.Monoid ( Monoid(..), First(..) )
+import Data.Monoid ( Monoid(..), Dual(..), Endo(..), First(..) )
 import Data.Foldable ( Foldable(..) )
 
-infixl 8 ^?
+infixl 8 ^.., ^?
 
 -- |
 -- From the lens package:
@@ -151,8 +155,47 @@ foldMapOf :: (Profunctor p) => Accessing p r s a -> p a r -> s -> r
 foldMapOf l f x = getConst $ l (Const #. f) x
 
 -- |
+--
+-- The type is similar to this:
+--
+-- @
+-- `foldrOf` :: Accessing p (`Data.Monoid.Endo` r) s a -> (a -> r -> r) -> r -> s -> r
+-- @
+--
+-- `foldrOf` uses the @(a -> r -> r)@ function to map all the @a@s that the
+-- @`Accessing p (`Data.Monoid.Endo` r) s a`@ lens/getter/fold/traversal gives access to,
+-- and maps them into @r@ endomorphisms (@type `Data.Monoid.Endo` r = Endo { appEndo :: r -> r}@)
+-- and then folds them using `foldMapOf`.  The `Data.Monoid.Monoid` behaviour
+-- for `Data.Monoid.Endo` is like the `foldr` behaviour.
+--
+foldrOf :: (Profunctor p) => Accessing p (Endo r) s a -> p a (r -> r) -> r -> s -> r
+foldrOf l f b = flip appEndo b #. foldMapOf l (Endo #. f)
+
+-- |
+-- A left associated fold of the parts of a structure exposed by a lens/fold/getter/traversal
+--
+-- The `Data.Monoid.Dual` type commutes the `Data.Monoid.mappend` operation,
+-- which will reverse the order in which the endomorphisms are applied.
+--
+foldlOf :: Getting (Dual (Endo r)) s a -> (r -> a -> r) -> r -> s -> r
+foldlOf l f b = flip appEndo b . getDual . foldMapOf l (Dual . Endo . flip f)
+
+-- |
 -- `folded` hasn't looked like this in a while, since Indexed Lenses have
 -- been introduced, which I don't understand yet.
 --
 folded :: (Foldable f) => Fold (f a) a
 folded g = coerce . getFolding . foldMap (Folding . g)
+
+-- |
+-- Given a lens/getter/fold/traversal, returns the list of
+-- values it gives a view of.
+--
+toListOf :: Getting (Endo [a]) s a -> s -> [a]
+toListOf l = foldrOf l (:) []
+
+-- |
+-- Operator version of `toListOf`
+--
+(^..) :: s -> Getting (Endo [a]) s a -> [a]
+(^..) = flip toListOf
