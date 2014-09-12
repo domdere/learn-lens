@@ -47,6 +47,8 @@ library
                     ,   Control.Lens.Fold
                     ,   Control.Lens.Getter
                     ,   Control.Lens.Motivation
+                    ,   Control.Lens.Setter
+                    ,   Control.Lens.Traversal
                     ,   Control.Lens.Tuple
 
     other-modules:      LensPrelude

@@ -16,17 +16,20 @@ module Control.Lens.Setter (
         ASetter
     -- * The Settable Type Class
     ,   Settable
+    ,   Setting
     -- * The Setter Type
     ,   Setter
     -- * Operators
     ,   (.~)
     -- * Functions
-    -- ** Building Setters
     ,   set
+    ,   mapped
+    ,   over
     ) where
 
 import LensPrelude
 import Data.Distributive
+import Data.Profunctor
 import Data.Functor.Identity
 
 import Control.Applicative ( Applicative, pure )
@@ -34,11 +37,16 @@ import Data.Traversable ( Traversable )
 
 infixr 4 .~
 
--- | This is the specialisation of `Lens` on which the
+-- |
+-- This is the specialisation of `Lens` on which the
 -- Setters are based, it should look reminiscent of
 -- the `CrapLens` in `Control..Lens.Motivation`
 --
 type ASetter s t a b = (a -> Identity b) -> s -> Identity t
+
+-- |
+--
+type Setting p s t a b = p a (Identity b) -> s -> Identity t
 
 -- |
 -- This type class will embody the properties of the Identity Functor
@@ -60,8 +68,25 @@ instance Settable Identity where
 --
 type Setter s t a b = forall f. (Settable f) => (a -> f b) -> s -> f t
 
+-- |
+-- sets the target of the setter to the given value
+--
 set :: ASetter s t a b -> b -> s -> t
 set l x y = untainted $ l ((const . pure) x) y
 
 (.~) :: ASetter s t a b -> b -> s -> t
 (.~) = set
+
+-- |
+-- applies a function to the target of a lens and sets the value to the output of the function
+--
+over :: (Profunctor p) => Setting p s t a b -> p a b -> s -> t
+over l f x = untainted $ l (pure #. f) x
+
+-- |
+-- Generalises `Data.Functor.Functor` to a Setter
+--
+-- forall f. (Settable f1, Functor f) => (a -> f1 b) -> f a -> f1 (f b)
+--
+mapped :: (Functor f) => Setter (f a) (f b) a b
+mapped g = pure . fmap (untainted . g)
