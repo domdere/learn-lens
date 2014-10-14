@@ -39,7 +39,8 @@ library
 
     hs-source-dirs:     src
 
-    exposed-modules:    Data.Contravariant
+    exposed-modules:    Data.Bifoldable
+                    ,   Data.Contravariant
                     ,   Data.Distributive
                     ,   Data.Functor.Const
                     ,   Data.Profunctor
